@@ -33,7 +33,5 @@ processa_linhas([]).
 processa_linhas([Linha | Resto]):-
     % Printa a cabeça da lista.
     writeln(Linha),
-    % Adiciona a cabeca da lista como predicado
-    assertz(Linha),
     % Pede para processar o resto da lista.
     processa_linhas(Resto).
