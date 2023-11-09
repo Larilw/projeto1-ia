@@ -1,18 +1,30 @@
+:-initialization(main).
+
+main():-
+    writeln("Bem-vindo ao calculador de rotas!"),
+    writeln("Por favor, digite 'ler_arquivo('').' com o caminho absoluto do seu arquivo texto dentro das aspas simples dentro dos parenteses!").
+    /*
+    writeln("Por favor, forneca o caminho absoluto do arquivo txt que especifica as suas rotas:"),
+    nl,
+    read(Arquivo),
+    ler_arquivo(Arquivo).
+    */
+/*
+ler_arquivo(NomeArquivo):-
+    \+ open(NomeArquivo, read, Stream),
+    writeln("Não foi possível abrir o arquivo, tente novamente:").
+*/
+
 % ler_arquivo(NomeArquivo): Tenta ler arquivo no caminho passado em NomeArquivo
 % ler_arquivo(+NomeArquivo)
 ler_arquivo(NomeArquivo):-
-    % Abre o arquivo e armazena o fluxo (stream) do arquivo na variável Stream.
+    writeln("\nSucesso ao abrir o arquivo! Lendo...\n"),
     open(NomeArquivo, read, Stream),
-
-    % Lê cada linha que está na variável Stream e armazena em um vetor chamado Linhas.
     ler_linhas(Stream, Linhas),
-
-    % Fecha o fluxo do arquivo.
     close(Stream),
-
-    % Processa a lógica do trabalho pedido, fornecendo as linhas lidas do arquivo.
-    processa_linhas(Linhas).
-
+    processa_linhas(Linhas),
+    menu.
+    
 % ler_linhas(Stream, Lista): Se atingiu o final do arquivo, retorna uma lista vazia
 % ler_linhas(+Stream, ?Lista)
 ler_linhas(Stream, []):-
@@ -23,11 +35,7 @@ ler_linhas(Stream, []):-
 ler_linhas(Stream, [Linha | Resto]):-
     % Se não chegou no fim do arquivo, continua.
     \+ at_end_of_stream(Stream),
-
-    % Lê uma linha do arquivo e coloca na variável Linha.
     read(Stream, Linha),
-
-    % Pede para continuar lendo o arquivo e ir armazenando no resto da lista, pois a cabeça já tá ocupada (Linha).
     ler_linhas(Stream, Resto).
 
 % processa_linhas(Lista): Printa cada elemento da lista
@@ -36,12 +44,20 @@ processa_linhas([]).
 processa_linhas([Linha | Resto]):-
     % Adiciona a cabeça da lista como um predicado dinâmico.
     assertz(Linha),
-    % Pede para processar o resto da lista.
     processa_linhas(Resto).
+
+menu:-
+    writeln("-----MENU-----\n"),
+    writeln("-> Se quiser ver todas as rotas possiveis, escreva ''"),
+    writeln("-> Se quiser saber todos os destinos possiveis a partir de uma cidade presente nas rotas, escreva ''"),
+    writeln("-> Se quiser saber todas as origens possiveis para uma dada cidade destino presente nas rotas, escreva ''"),
+    writeln("-> Se quiser saber o menor caminho entre duas cidades presentes nas rotas, escreva 'menor_caminho(origem,destino,MenorCaminho).'"),
+    writeln("\nLEMBRETE: Ao digitar os comandos, apenas substitua o(s) parametro(s) que possuem letra inicial minuscula pelo nome da(s) cidade(s) de seu interesse.").
 
 % Predicado para verificar se um elemento está em uma lista.
 esta_na_lista(X, [X | _]).
-esta_na_lista(X, [_ | T]) :- esta_na_lista(X, T).
+esta_na_lista(X, [_ | T]) :-
+    esta_na_lista(X, T).
 
 % Predicado para calcular a distância entre duas cidades com lista de cidades visitadas.
 pode_ir(X, X, _, 0).
@@ -62,14 +78,15 @@ caminho1(Ini, [Adj | Cids], Dist, DistF, CamF) :-
     D2 is Dist + D1,
     caminho1(Ini, [Interm, Adj | Cids], D2, DistF, CamF).
 
-% Predicado para calcular o menor caminho entre duas cidades.
+% menor_caminho(Ini, Fim, MenorCam): Calcula o menor caminho entre duas cidades.
+% menor_caminho(+Ini, +Fim, -MenorCam)
 menor_caminho(Ini, Fim, MenorCam) :-
-    findall((Dist, Cam), caminho(Ini, Fim, Dist, Cam), TodosCaminhos),
+    findall((Dist, Cam),caminho(Ini, Fim, Dist, Cam), TodosCaminhos),
     encontrar_menor_caminho(TodosCaminhos, MenorCam).
 
 % Predicado para encontrar o menor caminho a partir de uma lista de caminhos.
-encontrar_menor_caminho([(D1, C1)], (D1, C1)).
-encontrar_menor_caminho([(D1, C1) | Resto], (D2, C2)) :-
+encontrar_menor_caminho([D1], D1).
+encontrar_menor_caminho([D1 | Resto], (D2, C2)) :-
     encontrar_menor_caminho(Resto, (D2, C2)),
     D1 < D2, !.
 encontrar_menor_caminho([(_, _) | Resto], MenorCam) :-
