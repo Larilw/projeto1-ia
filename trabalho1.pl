@@ -48,16 +48,11 @@ processa_linhas([Linha | Resto]):-
 
 menu:-
     writeln("-----MENU-----\n"),
-    writeln("-> Se quiser ver todas as rotas possiveis, escreva ''"),
-    writeln("-> Se quiser saber todos os destinos possiveis a partir de uma cidade presente nas rotas, escreva ''"),
-    writeln("-> Se quiser saber todas as origens possiveis para uma dada cidade destino presente nas rotas, escreva ''"),
+    writeln("-> Se quiser ver todas as melhores rotas possiveis, escreva 'menor_caminho(X,Y,MenorCaminho)'"),
+    writeln("-> Se quiser saber todas as melhores rotas que vao para um destino especifico, escreva 'menor_caminho(X,destino,MenorCaminho)'"),
+    writeln("-> Se quiser saber todas as melhores rotas que saem de uma origem especifica, escreva 'menor_caminho(origem,Y,MenorCaminho)'"),
     writeln("-> Se quiser saber o menor caminho entre duas cidades presentes nas rotas, escreva 'menor_caminho(origem,destino,MenorCaminho).'"),
     writeln("\nLEMBRETE: Ao digitar os comandos, apenas substitua o(s) parametro(s) que possuem letra inicial minuscula pelo nome da(s) cidade(s) de seu interesse.").
-
-% Predicado para verificar se um elemento está em uma lista.
-esta_na_lista(X, [X | _]).
-esta_na_lista(X, [_ | T]) :-
-    esta_na_lista(X, T).
 
 % Predicado para calcular a distância entre duas cidades com lista de cidades visitadas.
 pode_ir(X, X, _, 0).
@@ -78,16 +73,12 @@ caminho1(Ini, [Adj | Cids], Dist, DistF, CamF) :-
     D2 is Dist + D1,
     caminho1(Ini, [Interm, Adj | Cids], D2, DistF, CamF).
 
-% menor_caminho(Ini, Fim, MenorCam): Calcula o menor caminho entre duas cidades.
-% menor_caminho(+Ini, +Fim, -MenorCam)
-menor_caminho(Ini, Fim, MenorCam) :-
-    findall((Dist, Cam),caminho(Ini, Fim, Dist, Cam), TodosCaminhos),
-    encontrar_menor_caminho(TodosCaminhos, MenorCam).
+% menor_caminho(Ini, Fim, MenorCaminho): Calcula o menor caminho entre duas cidades.
+% menor_caminho(+Ini, +Fim, -MenorCaminho)
+menor_caminho(Ini, Fim, MenorCaminho) :-
+    setof((Dist, Cam), caminho(Ini, Fim, Dist, Cam), TodosCaminhos),
+    TodosCaminhos = [MenorCaminho | _].
 
-% Predicado para encontrar o menor caminho a partir de uma lista de caminhos.
-encontrar_menor_caminho([D1], D1).
-encontrar_menor_caminho([(D1, _) | Resto], (D2, Cam2)) :-
-    encontrar_menor_caminho(Resto, (D2, Cam2)),
-    D1 < D2, !.
-encontrar_menor_caminho([(_, _) | Resto], MenorCam) :-
-    encontrar_menor_caminho(Resto, MenorCam).
+% Retorna true se o elemento estiver na lista
+esta_na_lista(X, [X | _]).
+esta_na_lista(X, [_ | T]) :- esta_na_lista(X, T).
