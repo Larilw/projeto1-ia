@@ -79,19 +79,25 @@ menor_caminho(Ini, Fim, MenorCaminho) :-
 % listar_menores_caminhos(Ini, Fim): Encontra e imprime todos os menores caminhos entre Ini e Fim.
 % listar_menores_caminhos(+Ini, +Fim)
 listar_menores_caminhos(Ini, Fim):-
-    %Encontra todos os caminhos
+    % Encontra todos os caminhos
     findall(MenorCaminho, menor_caminho(Ini,Fim,MenorCaminho), MenoresCaminhos),
-    %Imprime os caminhos encontrados
+    % Imprime os caminhos encontrados
     imprimir_caminhos(MenoresCaminhos).
 
 % imprimir_caminhos(Caminhos): Imprime os caminhos no formato desejado, pulando caminhos com custo zero.
 % imprimir_caminhos(+Caminhos)
 imprimir_caminhos([]).
-imprimir_caminhos([Caminho | Resto]) :-
-    Caminho = (Custo, _),
-    %Verifica se o custo do caminho e maior que 0 para imprimir
+imprimir_caminhos([(Custo, Caminho) | Resto]) :-
+    % Verifica se o custo do caminho e maior que 0 para imprimir
     Custo > 0,
+    write('Caminho: '),
     writeln(Caminho),
+    write('Valor total: '),
+    write(Custo),
+    writeln(' reais.\n'),
     imprimir_caminhos(Resto).
+
+% imprimir_caminhos(Caminhos): Imprime o Resto dos Caminhos mesmo se o Custo do atual for 0.
+% imprimir_caminhos(+Caminhos)
 imprimir_caminhos([_|Resto]) :-
     imprimir_caminhos(Resto).
