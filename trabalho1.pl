@@ -8,10 +8,10 @@ main:-
 % menu: Apresenta as quatro opções possíveis para conferir as melhores rotas referente ao grafo carregado.
 menu:-
     writeln('-----MENU-----\n'),
-    writeln("-> Se quiser ver todas as melhores rotas possiveis, escreva 'menor_caminho(X,Y,MenorCaminho).'"),
-    writeln("-> Se quiser saber todas as melhores rotas que vao para um destino especifico, escreva 'menor_caminho(X,destino,MenorCaminho).'"),
-    writeln("-> Se quiser saber todas as melhores rotas que saem de uma origem especifica, escreva 'menor_caminho(origem,Y,MenorCaminho).'"),
-    writeln("-> Se quiser saber o menor caminho entre duas cidades presentes nas rotas, escreva 'menor_caminho(origem,destino,MenorCaminho).'"),
+    writeln("-> Se quiser ver todas as melhores rotas possiveis, escreva 'listar_menores_caminhos(X,Y).'"),
+    writeln("-> Se quiser saber todas as melhores rotas que vao para um destino especifico, escreva 'listar_menores_caminhos(X,destino).'"),
+    writeln("-> Se quiser saber todas as melhores rotas que saem de uma origem especifica, escreva 'listar_menores_caminhos(origem,Y).'"),
+    writeln("-> Se quiser saber o menor caminho entre duas cidades presentes nas rotas, escreva 'listar_menores_caminhos(origem,destino).'"),
     writeln('\nLEMBRETE: Ao digitar os comandos, apenas substitua o(s) parametro(s) que possue(m) letra inicial minuscula pelo nome da(s) cidade(s) de seu interesse.').
 
 % ler_arquivo(NomeArquivo): Tenta ler arquivo no caminho passado em NomeArquivo
@@ -50,28 +50,48 @@ esta_na_lista(X, [X | _]).
 esta_na_lista(X, [_ | T]) :-
     esta_na_lista(X, T).
 
-% caminho1(Ini, Lista, Dist, DistF, CamF): Percorre o grafo montando do destino pra origem a lista de nós visitados e guardando o custo dessa rota.
-% caminho1(?Ini, ?Lista, +Dist, -DistF, -CamF)
-caminho1(Cid, [Cid | Cids], Dist, Dist, [Cid | Cids]).
-caminho1(Ini, [Adj | Cids], Dist, DistF, CamF) :-
+% caminho1(Ini, Lista, Custo, CustoF, CamF): Percorre o grafo montando do destino pra origem a lista de nós visitados e guardando o custo dessa rota.
+% caminho1(?Ini, ?Lista, +Custo, -CustoF, -CamF)
+caminho1(Cid, [Cid | Cids], Custo, Custo, [Cid | Cids]).
+caminho1(Ini, [Adj | Cids], Custo, CustoF, CamF) :-
     % Escolhe no conjunto de fatos algum fato que encaixe o segundo argumento com Adj.
-    rota(Interm, Adj, D1),
+    rota(Interm, Adj, C1),
     % Verifica se a cidade Interm não foi visitada.
     \+ esta_na_lista(Interm, [Adj | Cids]),
     % Atualiza o custo da rota.
-    D2 is Dist + D1,
+    C2 is Custo + C1,
     % Se chama recursivamente tendo agora Interm como a nova cabeça da lista e D2 com novo custo.
-    caminho1(Ini, [Interm, Adj | Cids], D2, DistF, CamF).
+    caminho1(Ini, [Interm, Adj | Cids], C2, CustoF, CamF).
 
-% caminho(Ini, Fim, Dist, Cam): Encontra um caminho entre duas cidades com lista de cidades visitadas.
-% caminho(?Ini, ?Fim, -Dist, -Cam)
-caminho(Ini, Fim, Dist, Cam) :-
-    caminho1(Ini, [Fim], 0, Dist, Cam).
+% caminho(Ini, Fim, Custo, Cam): Encontra um caminho entre duas cidades com lista de cidades visitadas.
+% caminho(?Ini, ?Fim, -Custo, -Cam)
+caminho(Ini, Fim, Custo, Cam) :-
+    caminho1(Ini, [Fim], 0, Custo, Cam).
 
 % menor_caminho(Ini, Fim, MenorCaminho): Calcula o menor caminho entre Ini e Fim.
 % menor_caminho(?Ini, ?Fim, -MenorCaminho)
 menor_caminho(Ini, Fim, MenorCaminho) :-
-    % Pega todas as soluções encontradas pelo predicado caminho/4, que tem (Dist, Cam) com saída, colocando-as em TodosCaminhos de forma ordenada.
-    setof((Dist, Cam), caminho(Ini, Fim, Dist, Cam), TodosCaminhos),
+    % Pega todas as soluções encontradas pelo predicado caminho, que tem o custo e o caminho como saída, colocando-as em TodosCaminhos de forma ordenada.
+    setof((Custo, Cam), caminho(Ini, Fim, Custo, Cam), TodosCaminhos),
     % Unifica MenorCaminho com a cabeça de TodosCaminhos.
     TodosCaminhos = [MenorCaminho | _].
+
+% listar_menores_caminhos(Ini, Fim): Encontra e imprime todos os menores caminhos entre Ini e Fim.
+% listar_menores_caminhos(+Ini, +Fim)
+listar_menores_caminhos(Ini, Fim):-
+    %Encontra todos os caminhos
+    findall(MenorCaminho, menor_caminho(Ini,Fim,MenorCaminho), MenoresCaminhos),
+    %Imprime os caminhos encontrados
+    imprimir_caminhos(MenoresCaminhos).
+
+% imprimir_caminhos(Caminhos): Imprime os caminhos no formato desejado, pulando caminhos com custo zero.
+% imprimir_caminhos(+Caminhos)
+imprimir_caminhos([]).
+imprimir_caminhos([Caminho | Resto]) :-
+    Caminho = (Custo, _),
+    %Verifica se o custo do caminho e maior que 0 para imprimir
+    Custo > 0,
+    writeln(Caminho),
+    imprimir_caminhos(Resto).
+imprimir_caminhos([_|Resto]) :-
+    imprimir_caminhos(Resto).
