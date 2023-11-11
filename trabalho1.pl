@@ -86,8 +86,8 @@ menor_caminho(Ini, Fim, MenorCam) :-
 
 % Predicado para encontrar o menor caminho a partir de uma lista de caminhos.
 encontrar_menor_caminho([D1], D1).
-encontrar_menor_caminho([D1 | Resto], (D2, C2)) :-
-    encontrar_menor_caminho(Resto, (D2, C2)),
+encontrar_menor_caminho([(D1, _) | Resto], (D2, Cam2)) :-
+    encontrar_menor_caminho(Resto, (D2, Cam2)),
     D1 < D2, !.
 encontrar_menor_caminho([(_, _) | Resto], MenorCam) :-
     encontrar_menor_caminho(Resto, MenorCam).
